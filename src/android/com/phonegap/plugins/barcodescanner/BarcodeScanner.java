@@ -16,13 +16,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 
-import org.apache.cordova.api.Plugin;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.api.CallbackContext;
 
 /**
  * This calls out to the ZXing barcode reader and returns the result.
  */
-public class BarcodeScanner extends Plugin {
+public class BarcodeScanner extends CordovaPlugin {
     private static final String SCAN = "scan";
     private static final String ENCODE = "encode";
     private static final String CANCELLED = "cancelled";
@@ -42,6 +42,7 @@ public class BarcodeScanner extends Plugin {
     public static final int REQUEST_CODE = 0x0ba7c0de;
 
     public String callback;
+    public CallbackContext callback_ctx;
 
     /**
      * Constructor.
@@ -57,8 +58,8 @@ public class BarcodeScanner extends Plugin {
      * @param callbackId    The callback id used when calling back into JavaScript.
      * @return              A PluginResult object with a status and message.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        this.callback = callbackId;
+    public boolean execute(String action, JSONArray args, CallbackContext ctx) {
+	this.callback_ctx = ctx;
 
         if (action.equals(ENCODE)) {
             JSONObject obj = args.optJSONObject(0);
@@ -72,22 +73,23 @@ public class BarcodeScanner extends Plugin {
                 }
 
                 if (data == null) {
-                    return new PluginResult(PluginResult.Status.ERROR, "User did not specify data to encode");
+		    this.callback_ctx.error("User did not specify data to encode");
+		    return true;
                 }
 
                 encode(type, data);
             } else {
-                return new PluginResult(PluginResult.Status.ERROR, "User did not specify data to encode");
+                this.callback_ctx.error("User did not specify data to encode");
+		return true;
             }
         }
         else if (action.equals(SCAN)) {
             scan();
         } else {
-            return new PluginResult(PluginResult.Status.INVALID_ACTION);
+	    return false;
         }
-        PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
-        r.setKeepCallback(true);
-        return r;
+
+	return true;
     }
 
 
@@ -98,7 +100,7 @@ public class BarcodeScanner extends Plugin {
         Intent intentScan = new Intent(SCAN_INTENT);
         intentScan.addCategory(Intent.CATEGORY_DEFAULT);
 
-        this.cordova.startActivityForResult((Plugin) this, intentScan, REQUEST_CODE);
+        this.cordova.startActivityForResult((CordovaPlugin) this, intentScan, REQUEST_CODE);
     }
 
     /**
@@ -120,7 +122,7 @@ public class BarcodeScanner extends Plugin {
                 } catch(JSONException e) {
                     //Log.d(LOG_TAG, "This should never happen");
                 }
-                this.success(new PluginResult(PluginResult.Status.OK, obj), this.callback);
+		this.callback_ctx.success( obj);
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 JSONObject obj = new JSONObject();
                 try {
@@ -130,9 +132,9 @@ public class BarcodeScanner extends Plugin {
                 } catch(JSONException e) {
                     //Log.d(LOG_TAG, "This should never happen");
                 }
-                this.success(new PluginResult(PluginResult.Status.OK, obj), this.callback);
+		this.callback_ctx.success(obj);
             } else {
-                this.error(new PluginResult(PluginResult.Status.ERROR), this.callback);
+		this.callback_ctx.error("Unknown error");
             }
         }
     }
