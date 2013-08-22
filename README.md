@@ -1,7 +1,7 @@
 BarcodeScanner
 ==============
 
-for phonegap/cordova 3.0.0
+## for phonegap/cordova 3.0.0
 
 Cross-platform BarcodeScanner for Cordova / PhoneGap.
 
