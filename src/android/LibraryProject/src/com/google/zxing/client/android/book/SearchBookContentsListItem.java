@@ -26,6 +26,9 @@ import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.google.zxing.FakeR;
+
+import java.util.Locale;
 
 /**
  * A list item which displays the page number and snippet of this search result.
@@ -35,23 +38,22 @@ import android.widget.TextView;
 public final class SearchBookContentsListItem extends LinearLayout {
   private TextView pageNumberView;
   private TextView snippetView;
-  private Context context;
 
+  private static FakeR fakeR;
   SearchBookContentsListItem(Context context) {
     super(context);
-    this.context = context;
+	fakeR = new FakeR(context);
   }
 
   public SearchBookContentsListItem(Context context, AttributeSet attrs) {
     super(context, attrs);
-    this.context = context;
   }
 
   @Override
   protected void onFinishInflate() {
     super.onFinishInflate();
-    pageNumberView = (TextView) findViewById(context.getResources().getIdentifier("page_number_view", "id", context.getPackageName()));
-    snippetView = (TextView) findViewById(context.getResources().getIdentifier("snippet_view", "id", context.getPackageName()));
+    pageNumberView = (TextView) findViewById(fakeR.getId("id", "page_number_view"));
+    snippetView = (TextView) findViewById(fakeR.getId("id", "snippet_view"));
   }
 
   public void set(SearchBookContentsResult result) {
@@ -59,8 +61,8 @@ public final class SearchBookContentsListItem extends LinearLayout {
     String snippet = result.getSnippet();
     if (snippet.length() > 0) {
       if (result.getValidSnippet()) {
-        String lowerQuery = SearchBookContentsResult.getQuery().toLowerCase();
-        String lowerSnippet = snippet.toLowerCase();
+        String lowerQuery = SearchBookContentsResult.getQuery().toLowerCase(Locale.getDefault());
+        String lowerSnippet = snippet.toLowerCase(Locale.getDefault());
         Spannable styledSnippet = new SpannableString(snippet);
         StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
         int queryLength = lowerQuery.length();

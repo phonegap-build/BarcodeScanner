@@ -21,8 +21,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import com.google.zxing.FakeR;
 
 import java.util.List;
+
+import com.google.zxing.client.android.R;
 
 /**
  * Manufactures list items which represent SBC results.
@@ -31,10 +34,11 @@ import java.util.List;
  */
 final class SearchBookContentsAdapter extends ArrayAdapter<SearchBookContentsResult> {
 
-  private Context context;
+  private static FakeR fakeR;
+
   SearchBookContentsAdapter(Context context, List<SearchBookContentsResult> items) {
-    super(context, context.getResources().getIdentifier("search_book_contents_list_item", "layout", context.getPackageName()), 0, items);
-    this.context = context;
+    super(context, fakeR.getId("layout", "search_book_contents_list_item"), 0, items);
+	fakeR = new FakeR(context);
   }
 
   @Override
@@ -44,7 +48,7 @@ final class SearchBookContentsAdapter extends ArrayAdapter<SearchBookContentsRes
     if (view == null) {
       LayoutInflater factory = LayoutInflater.from(getContext());
       listItem = (SearchBookContentsListItem) factory.inflate(
-          context.getResources().getIdentifier("search_book_contents_list_item", "layout", context.getPackageName()), viewGroup, false);
+          fakeR.getId("layout", "search_book_contents_list_item"), viewGroup, false);
     } else {
       if (view instanceof SearchBookContentsListItem) {
         listItem = (SearchBookContentsListItem) view;

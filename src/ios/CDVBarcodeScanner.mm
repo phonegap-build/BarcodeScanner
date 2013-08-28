@@ -21,7 +21,7 @@
 
 //------------------------------------------------------------------------------
 // Delegate to handle orientation functions
-// 
+//
 //------------------------------------------------------------------------------
 @protocol CDVBarcodeScannerOrientationDelegate <NSObject>
 
@@ -46,10 +46,13 @@
 //------------------------------------------------------------------------------
 @interface CDVBarcodeScanner : CDVPlugin {}
 - (NSString*)isScanNotPossible;
-- (void)scan:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
+- (void)scan:(NSArray*)arguments;
 - (void)encode:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
-- (void)returnSuccess:(NSString*)scannedText format:(NSString*)format cancelled:(BOOL)cancelled callback:(NSString*)callback;
-- (void)returnError:(NSString*)message callback:(NSString*)callback;
+- (void)returnSuccess:(NSString*)scannedText format:(NSString*)format cancelled:(BOOL)cancelled;
+- (void)returnError:(NSString*)message;
+
+@property (nonatomic, copy) NSString* callbackId;
+
 @end
 
 //------------------------------------------------------------------------------
@@ -57,7 +60,6 @@
 //------------------------------------------------------------------------------
 @interface CDVbcsProcessor : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate> {}
 @property (nonatomic, retain) CDVBarcodeScanner*           plugin;
-@property (nonatomic, retain) NSString*                   callback;
 @property (nonatomic, retain) UIViewController*           parentViewController;
 @property (nonatomic, retain) CDVbcsViewController*        viewController;
 @property (nonatomic, retain) AVCaptureSession*           captureSession;
@@ -67,7 +69,7 @@
 @property (nonatomic)         BOOL                        is2D;
 @property (nonatomic)         BOOL                        capturing;
 
-- (id)initWithPlugin:(CDVBarcodeScanner*)plugin callback:(NSString*)callback parentViewController:(UIViewController*)parentViewController alterateOverlayXib:(NSString *)alternateXib;
+- (id)initWithPlugin:(CDVBarcodeScanner*)plugin parentViewController:(UIViewController*)parentViewController alterateOverlayXib:(NSString *)alternateXib;
 - (void)scanBarcode;
 - (void)barcodeScanSucceeded:(NSString*)text format:(NSString*)format;
 - (void)barcodeScanFailed:(NSString*)message;
@@ -107,7 +109,17 @@
 //------------------------------------------------------------------------------
 @implementation CDVBarcodeScanner
 
+@synthesize callbackId = _callbackId;
+
 //--------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------
+- (void)dealloc {
+    self.callbackId = nil;
+    
+    [super dealloc];
+}
+
 - (NSString*)isScanNotPossible {
     NSString* result = nil;
     
@@ -120,29 +132,30 @@
 }
 
 //--------------------------------------------------------------------------
-- (void)scan:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options {
+- (void)scan:(CDVInvokedUrlCommand*)command{
+    
+    self.callbackId = command.callbackId;
+    
     CDVbcsProcessor* processor;
-    NSString*       callback;
     NSString*       capabilityError;
     
-    callback = [arguments objectAtIndex:0];
+    NSArray *arguments = command.arguments;
     
-    // We allow the user to define an alternate xib file for loading the overlay. 
+    // We allow the user to define an alternate xib file for loading the overlay.
     NSString *overlayXib = nil;
-    if ( [arguments count] == 2 )
+    if ( [arguments count] == 1 )
     {
         overlayXib = [arguments objectAtIndex:1];
     }
     
     capabilityError = [self isScanNotPossible];
     if (capabilityError) {
-        [self returnError:capabilityError callback:callback];
+        [self returnError:capabilityError];
         return;
     }
     
     processor = [[CDVbcsProcessor alloc]
                  initWithPlugin:self
-                 callback:callback
                  parentViewController:self.viewController
                  alterateOverlayXib:overlayXib
                  ];
@@ -153,11 +166,11 @@
 
 //--------------------------------------------------------------------------
 - (void)encode:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options {
-    [self returnError:@"encode function not supported" callback:[arguments objectAtIndex:0]];
+    [self returnError:@"encode function not supported"];
 }
 
 //--------------------------------------------------------------------------
-- (void)returnSuccess:(NSString*)scannedText format:(NSString*)format cancelled:(BOOL)cancelled callback:(NSString*)callback {
+- (void)returnSuccess:(NSString*)scannedText format:(NSString*)format cancelled:(BOOL)cancelled {
     NSNumber* cancelledNumber = [NSNumber numberWithInt:(cancelled?1:0)];
     
     NSMutableDictionary* resultDict = [[[NSMutableDictionary alloc] init] autorelease];
@@ -170,21 +183,17 @@
                                messageAsDictionary: resultDict
                                ];
     
-    NSString* js = [result toSuccessCallbackString:callback];
-    
-    [self writeJavascript:js];
+    [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
 }
 
 //--------------------------------------------------------------------------
-- (void)returnError:(NSString*)message callback:(NSString*)callback {
+- (void)returnError:(NSString*)message{
     CDVPluginResult* result = [CDVPluginResult
-                               resultWithStatus: CDVCommandStatus_OK
+                               resultWithStatus: CDVCommandStatus_ERROR
                                messageAsString: message
                                ];
     
-    NSString* js = [result toErrorCallbackString:callback];
-    
-    [self writeJavascript:js];
+    [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
 }
 
 @end
@@ -195,7 +204,6 @@
 @implementation CDVbcsProcessor
 
 @synthesize plugin               = _plugin;
-@synthesize callback             = _callback;
 @synthesize parentViewController = _parentViewController;
 @synthesize viewController       = _viewController;
 @synthesize captureSession       = _captureSession;
@@ -207,14 +215,12 @@
 
 //--------------------------------------------------------------------------
 - (id)initWithPlugin:(CDVBarcodeScanner*)plugin
-            callback:(NSString*)callback
 parentViewController:(UIViewController*)parentViewController
   alterateOverlayXib:(NSString *)alternateXib {
     self = [super init];
     if (!self) return self;
     
     self.plugin               = plugin;
-    self.callback             = callback;
     self.parentViewController = parentViewController;
     self.alternateXib         = alternateXib;
     
@@ -228,7 +234,6 @@ parentViewController:(UIViewController*)parentViewController
 //--------------------------------------------------------------------------
 - (void)dealloc {
     self.plugin = nil;
-    self.callback = nil;
     self.parentViewController = nil;
     self.viewController = nil;
     self.captureSession = nil;
@@ -281,19 +286,19 @@ parentViewController:(UIViewController*)parentViewController
 //--------------------------------------------------------------------------
 - (void)barcodeScanSucceeded:(NSString*)text format:(NSString*)format {
     [self barcodeScanDone];
-    [self.plugin returnSuccess:text format:format cancelled:FALSE callback:self.callback];
+    [self.plugin returnSuccess:text format:format cancelled:FALSE];
 }
 
 //--------------------------------------------------------------------------
 - (void)barcodeScanFailed:(NSString*)message {
     [self barcodeScanDone];
-    [self.plugin returnError:message callback:self.callback];
+    [self.plugin returnError:message];
 }
 
 //--------------------------------------------------------------------------
 - (void)barcodeScanCancelled {
     [self barcodeScanDone];
-    [self.plugin returnSuccess:@"" format:@"" cancelled:TRUE callback:self.callback];
+    [self.plugin returnSuccess:@"" format:@"" cancelled:TRUE];
 }
 
 //--------------------------------------------------------------------------
@@ -624,7 +629,7 @@ parentViewController:(UIViewController*)parentViewController
     self.processor = nil;
     self.shutterPressed = NO;
     self.alternateXib = nil;
-    self.overlayView = nil;      
+    self.overlayView = nil;
     [super dealloc];
 }
 
@@ -680,7 +685,7 @@ parentViewController:(UIViewController*)parentViewController
 }
 
 //--------------------------------------------------------------------------
-- (UIView *)buildOverlayViewFromXib 
+- (UIView *)buildOverlayViewFromXib
 {
     [[NSBundle mainBundle] loadNibNamed:self.alternateXib owner:self options:NULL];
     
@@ -690,7 +695,7 @@ parentViewController:(UIViewController*)parentViewController
         return nil;
     }
     
-    return self.overlayView;        
+    return self.overlayView;
 }
 
 //--------------------------------------------------------------------------
@@ -820,7 +825,7 @@ parentViewController:(UIViewController*)parentViewController
 #pragma mark CDVBarcodeScannerOrientationDelegate
 
 - (BOOL)shouldAutorotate
-{   
+{
     return NO;
 }
 

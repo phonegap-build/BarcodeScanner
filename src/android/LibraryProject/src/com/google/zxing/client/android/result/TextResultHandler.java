@@ -29,15 +29,16 @@ import android.app.Activity;
  */
 public final class TextResultHandler extends ResultHandler {
 
-  private static final int[] buttons = new int[4];
+  private static int[] buttons;
 
   public TextResultHandler(Activity activity, ParsedResult result, Result rawResult) {
     super(activity, result, rawResult);
-    
-    buttons[0] = getIdentifier("string", "button_web_search");
-    buttons[1] = getIdentifier("string", "button_share_by_email");
-    buttons[2] = getIdentifier("string", "button_share_by_sms");
-    buttons[3] = getIdentifier("string", "button_custom_product_search");
+	buttons = new int[]{
+		fakeR.getId("string", "button_web_search"),
+		fakeR.getId("string", "button_share_by_email"),
+		fakeR.getId("string", "button_share_by_sms"),
+		fakeR.getId("string", "button_custom_product_search"),
+	};
   }
 
   @Override
@@ -71,6 +72,6 @@ public final class TextResultHandler extends ResultHandler {
 
   @Override
   public int getDisplayTitle() {
-    return getIdentifier("string", "result_text");
+    return fakeR.getId("string", "result_text");
   }
 }

@@ -29,13 +29,14 @@ import android.telephony.PhoneNumberUtils;
  * @author dswitkin@google.com (Daniel Switkin)
  */
 public final class SMSResultHandler extends ResultHandler {
-  private static final int[] buttons = new int[2];
+  private static int[] buttons;
 
   public SMSResultHandler(Activity activity, ParsedResult result) {
     super(activity, result);
-    
-    buttons[0] = getIdentifier("string", "button_sms");
-    buttons[1] = getIdentifier("string", "button_mms");
+	buttons = new int[]{
+		fakeR.getId("string", "button_sms"),
+		fakeR.getId("string", "button_mms")
+	};
   }
 
   @Override
@@ -65,7 +66,7 @@ public final class SMSResultHandler extends ResultHandler {
   @Override
   public CharSequence getDisplayContents() {
     SMSParsedResult smsResult = (SMSParsedResult) getResult();
-    StringBuffer contents = new StringBuffer(50);
+    StringBuilder contents = new StringBuilder(50);
     String[] rawNumbers = smsResult.getNumbers();
     String[] formattedNumbers = new String[rawNumbers.length];
     for (int i = 0; i < rawNumbers.length; i++) {
@@ -79,6 +80,6 @@ public final class SMSResultHandler extends ResultHandler {
 
   @Override
   public int getDisplayTitle() {
-    return getIdentifier("string", "result_sms");
+    return fakeR.getId("string", "result_sms");
   }
 }
