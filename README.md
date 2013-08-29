@@ -5,7 +5,7 @@ Cross-platform BarcodeScanner for Cordova / PhoneGap.
 
 Follows the [Cordova Plugin spec](https://github.com/apache/cordova-plugman/blob/master/plugin_spec.md), so that it works with [Plugman](https://github.com/apache/cordova-plugman).
 
-This plugin leverages Cordova/PhoneGap's [require/define functionality used for plugins](http://simonmacdonald.blogspot.ca/2012/08/so-you-wanna-write-phonegap-200-android.html). 
+This plugin leverages Cordova/PhoneGap's [require/define functionality used for plugins](http://simonmacdonald.blogspot.ca/2012/08/so-you-wanna-write-phonegap-200-android.html).
 
 Note: the Android source for this project includes an Android Library Project.
 plugman currently doesn't support Library Project refs, so its been
@@ -13,7 +13,7 @@ prebuilt as a jar library. Any updates to the Library Project should be
 committed with an updated jar.
 
 ## Using the plugin ##
-The plugin creates the object `cordova/plugin/BarcodeScanner` with the method `scan(success, fail)`. 
+The plugin creates the object `cordova/plugin/BarcodeScanner` with the method `scan(success, fail)`.
 
 The following barcode types are currently supported:
 ### Android
@@ -57,7 +57,7 @@ A full example could be:
                 "Result: " + result.text + "\n" +
                 "Format: " + result.format + "\n" +
                 "Cancelled: " + result.cancelled);
-      }, 
+      },
       function (error) {
           alert("Scanning failed: " + error);
       }
@@ -65,7 +65,7 @@ A full example could be:
 ```
 
 ## Encoding a Barcode ##
-The plugin creates the object `window.plugins.barcodeScanner` with the method `encode(type, data, success, fail)`. 
+The plugin creates the object `window.plugins.barcodeScanner` with the method `encode(type, data, success, fail)`.
 Supported encoding types:
 
 * TEXT_TYPE
@@ -84,6 +84,35 @@ A full example could be:
   	        alert("encoding failed: " + fail);
   	      }
   	    );
+```
+
+## Callback scope ##
+The `scan` and `encode` functions both support optional last parameters to provide scope to the `this` keyword on your callback functions:
+```
+   var scanner = cordova.require("cordova/plugin/BarcodeScanner");
+
+   scanner.scan(
+      function (result) {
+          alert("We got a barcode\n" +
+                "Result: " + result.text + "\n" +
+                "Format: " + result.format + "\n" +
+                "Cancelled: " + result.cancelled);
+      },
+      function (error) {
+          alert("Scanning failed: " + error);
+      },
+      this
+   );
+
+
+   scanner.encode(BarcodeScanner.Encode.TEXT_TYPE, "http://www.nytimes.com", function(success) {
+          alert("encode success: " + success);
+        }, function(fail) {
+          alert("encoding failed: " + fail);
+        },
+        {},
+        this
+      );
 ```
 
 ## Thanks on Github ##
