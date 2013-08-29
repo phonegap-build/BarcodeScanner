@@ -8,7 +8,7 @@
 
 
 cordova.define("cordova/plugin/BarcodeScanner",
-    
+
     function (require, exports, module) {
 
         var exec = require("cordova/exec");
@@ -27,7 +27,7 @@ cordova.define("cordova/plugin/BarcodeScanner",
         };
 
         //-------------------------------------------------------------------
-        BarcodeScanner.prototype.scan = function (successCallback, errorCallback) {
+        BarcodeScanner.prototype.scan = function (successCallback, errorCallback, thisCallback) {
             if (errorCallback == null) {
                 errorCallback = function () {
                 }
@@ -43,11 +43,11 @@ cordova.define("cordova/plugin/BarcodeScanner",
                 return
             }
 
-            exec(successCallback, errorCallback, 'BarcodeScanner', 'scan', []);
+            exec(successCallback.bind(thisCallback), errorCallback.bind(thisCallback), 'BarcodeScanner', 'scan', []);
         };
 
         //-------------------------------------------------------------------
-        BarcodeScanner.prototype.encode = function (type, data, successCallback, errorCallback, options) {
+        BarcodeScanner.prototype.encode = function (type, data, successCallback, errorCallback, options, thisCallback) {
             if (errorCallback == null) {
                 errorCallback = function () {
                 }
@@ -63,7 +63,7 @@ cordova.define("cordova/plugin/BarcodeScanner",
                 return
             }
 
-            exec(successCallback, errorCallback, 'BarcodeScanner', 'encode', [
+            exec(successCallback.bind(thisCallback), errorCallback.bind(thisCallback), 'BarcodeScanner', 'encode', [
                 {"type": type, "data": data, "options": options}
             ]);
         };
