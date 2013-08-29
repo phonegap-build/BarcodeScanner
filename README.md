@@ -87,7 +87,7 @@ A full example could be:
 ```
 
 ## Callback scope ##
-The `scan` and `encode` functions both support optional last parameters to provide scope to the `this` keyword on your callback functions:
+The `scan` and `encode` functions both support optional last parameters to provide scope to the `this` keyword on your callback functions.  The following code carries the current `this` scope into the callbacks:
 ```
    var scanner = cordova.require("cordova/plugin/BarcodeScanner");
 
