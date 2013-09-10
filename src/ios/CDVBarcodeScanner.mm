@@ -113,12 +113,6 @@
 
 //--------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------
-- (void)dealloc {
-    self.callbackId = nil;
-    
-    [super dealloc];
-}
 
 - (NSString*)isScanNotPossible {
     NSString* result = nil;
@@ -173,7 +167,7 @@
 - (void)returnSuccess:(NSString*)scannedText format:(NSString*)format cancelled:(BOOL)cancelled {
     NSNumber* cancelledNumber = [NSNumber numberWithInt:(cancelled?1:0)];
     
-    NSMutableDictionary* resultDict = [[[NSMutableDictionary alloc] init] autorelease];
+    NSMutableDictionary* resultDict = [[NSMutableDictionary alloc] init];
     [resultDict setObject:scannedText     forKey:@"text"];
     [resultDict setObject:format          forKey:@"format"];
     [resultDict setObject:cancelledNumber forKey:@"cancelled"];
@@ -232,20 +226,6 @@ parentViewController:(UIViewController*)parentViewController
 }
 
 //--------------------------------------------------------------------------
-- (void)dealloc {
-    self.plugin = nil;
-    self.parentViewController = nil;
-    self.viewController = nil;
-    self.captureSession = nil;
-    self.previewLayer = nil;
-    self.alternateXib = nil;
-    
-    self.capturing = NO;
-    
-    [super dealloc];
-}
-
-//--------------------------------------------------------------------------
 - (void)scanBarcode {
     NSString* errorMessage = [self setUpCaptureSession];
     if (errorMessage) {
@@ -253,7 +233,7 @@ parentViewController:(UIViewController*)parentViewController
         return;
     }
     
-    self.viewController = [[[CDVbcsViewController alloc] initWithProcessor: self alternateOverlay:self.alternateXib] autorelease];
+    self.viewController = [[CDVbcsViewController alloc] initWithProcessor: self alternateOverlay:self.alternateXib];
     // here we set the orientation delegate to the MainViewController of the app (orientation controlled in the Project Settings)
     self.viewController.orientationDelegate = self.plugin.viewController;
     
@@ -278,9 +258,6 @@ parentViewController:(UIViewController*)parentViewController
     // viewcontroller holding onto a reference to us, release them so they
     // will release us
     self.viewController = nil;
-    
-    // delayed [self release];
-    [self performSelector:@selector(release) withObject:nil afterDelay:1];
 }
 
 //--------------------------------------------------------------------------
@@ -305,7 +282,7 @@ parentViewController:(UIViewController*)parentViewController
 - (NSString*)setUpCaptureSession {
     NSError* error = nil;
     
-    AVCaptureSession* captureSession = [[[AVCaptureSession alloc] init] autorelease];
+    AVCaptureSession* captureSession = [[AVCaptureSession alloc] init] ;
     self.captureSession = captureSession;
     
     AVCaptureDevice* device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
@@ -314,7 +291,7 @@ parentViewController:(UIViewController*)parentViewController
     AVCaptureDeviceInput* input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
     if (!input) return @"unable to obtain video capture device input";
     
-    AVCaptureVideoDataOutput* output = [[[AVCaptureVideoDataOutput alloc] init] autorelease];
+    AVCaptureVideoDataOutput* output = [[AVCaptureVideoDataOutput alloc] init] ;
     if (!output) return @"unable to obtain video capture output";
     
     NSDictionary* videoOutputSettings = [NSDictionary
@@ -367,7 +344,7 @@ parentViewController:(UIViewController*)parentViewController
     if (!self.viewController.shutterPressed) return;
     self.viewController.shutterPressed = NO;
     
-    UIView* flashView = [[[UIView alloc] initWithFrame:self.viewController.view.frame] autorelease];
+    UIView* flashView = [[UIView alloc] initWithFrame:self.viewController.view.frame] ;
     [flashView setBackgroundColor:[UIColor whiteColor]];
     [self.viewController.view.window addSubview:flashView];
     
@@ -419,7 +396,7 @@ parentViewController:(UIViewController*)parentViewController
         
         
         const char* cString      = resultText->getText().c_str();
-        NSString*   resultString = [[[NSString alloc] initWithCString:cString encoding:NSUTF8StringEncoding] autorelease];
+        NSString*   resultString = [[NSString alloc] initWithCString:cString encoding:NSUTF8StringEncoding] ;
         
         [self barcodeScanSucceeded:resultString format:format];
         
@@ -589,7 +566,7 @@ parentViewController:(UIViewController*)parentViewController
 //--------------------------------------------------------------------------
 - (void)dumpImage:(UIImage*)image {
     NSLog(@"writing image to library: %dx%d", (int)image.size.width, (int)image.size.height);
-    ALAssetsLibrary* assetsLibrary = [[[ALAssetsLibrary alloc] init] autorelease];
+    ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init] ;
     [assetsLibrary
      writeImageToSavedPhotosAlbum:image.CGImage
      orientation:ALAssetOrientationUp
@@ -623,19 +600,10 @@ parentViewController:(UIViewController*)parentViewController
     return self;
 }
 
-//--------------------------------------------------------------------------
-- (void)dealloc {
-    self.view = nil;
-    self.processor = nil;
-    self.shutterPressed = NO;
-    self.alternateXib = nil;
-    self.overlayView = nil;
-    [super dealloc];
-}
 
 //--------------------------------------------------------------------------
 - (void)loadView {
-    self.view = [[[UIView alloc] initWithFrame: self.processor.parentViewController.view.frame] autorelease];
+    self.view = [[UIView alloc] initWithFrame: self.processor.parentViewController.view.frame];
     
     // setup capture preview layer
     AVCaptureVideoPreviewLayer* previewLayer = self.processor.previewLayer;
@@ -708,21 +676,21 @@ parentViewController:(UIViewController*)parentViewController
     CGRect bounds = self.view.bounds;
     bounds = CGRectMake(0, 0, bounds.size.width, bounds.size.height);
     
-    UIView* overlayView = [[[UIView alloc] initWithFrame:bounds] autorelease];
+    UIView* overlayView = [[UIView alloc] initWithFrame:bounds] ;
     overlayView.autoresizesSubviews = YES;
     overlayView.autoresizingMask    = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     overlayView.opaque              = NO;
     
-    UIToolbar* toolbar = [[[UIToolbar alloc] init] autorelease];
+    UIToolbar* toolbar = [[UIToolbar alloc] init] ;
     toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     
-    id cancelButton = [[[UIBarButtonItem alloc] autorelease]
+    id cancelButton = [[UIBarButtonItem alloc]
                        initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                        target:(id)self
                        action:@selector(cancelButtonPressed:)
                        ];
     
-    id flexSpace = [[[UIBarButtonItem alloc] autorelease]
+    id flexSpace = [[UIBarButtonItem alloc]
                     initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                     target:nil
                     action:nil
@@ -751,7 +719,7 @@ parentViewController:(UIViewController*)parentViewController
     [overlayView addSubview: toolbar];
     
     UIImage* reticleImage = [self buildReticleImage];
-    UIView* reticleView = [[[UIImageView alloc] initWithImage: reticleImage] autorelease];
+    UIView* reticleView = [[UIImageView alloc] initWithImage: reticleImage];
     CGFloat minAxis = MIN(rootViewHeight, rootViewWidth);
     
     rectArea = CGRectMake(
