@@ -1,6 +1,8 @@
 BarcodeScanner
 ==============
 
+## for phonegap/cordova 3.0.0
+
 Cross-platform BarcodeScanner for Cordova / PhoneGap.
 
 Follows the [Cordova Plugin spec](https://github.com/apache/cordova-plugman/blob/master/plugin_spec.md), so that it works with [Plugman](https://github.com/apache/cordova-plugman).
