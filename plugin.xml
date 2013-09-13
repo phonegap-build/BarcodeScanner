@@ -11,7 +11,9 @@
         <engine name="cordova" version=">=2.8.0" />
     </engines>    
 
-    <asset src="www/barcodescanner.js" target="barcodescanner.js" />
+    <js-module src="www/barcodescanner.js" name="BarcodeScanner">
+      <runs />
+    </js-module>
     
     <license>MIT</license>
 
