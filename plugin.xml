@@ -309,6 +309,8 @@
 
         <framework src="src/wp8/lib/zxing.wp8.0.dll" custom="true" />
 
+        <asset src="src/wp8/assets/cancel.png" target="../Images/appbar.cancel.png" />
+
         <source-file src="src/wp8/BarcodeScanner.cs" />
         <source-file src="src/wp8/BarcodeScannerTask.cs" />
         <source-file src="src/wp8/BarcodeScannerUI.xaml" />
