@@ -115,7 +115,8 @@ Supported encoding types:
 ```
 A full example could be:
 
-   cordova.plugins.barcodeScanner.encode(BarcodeScanner.Encode.TEXT_TYPE, "http://www.nytimes.com", function(success) {
+   var barcodeScanner = cordova.plugins.barcodeScanner;
+   barcodeScanner.encode(barcodeScanner.Encode.TEXT_TYPE, "http://www.nytimes.com", function(success) {
             alert("encode success: " + success);
           }, function(fail) {
             alert("encoding failed: " + fail);
